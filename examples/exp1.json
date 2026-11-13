@@ -1,0 +1,11 @@
+{
+  "root": "TOP",
+  "nodes": [
+    {"id": "TOP", "kind": "gate", "operator": "OR", "inputs": ["G1", "G2"]},
+    {"id": "G1", "kind": "gate", "operator": "AND", "inputs": ["A", "B"]},
+    {"id": "G2", "kind": "gate", "operator": "AND", "inputs": ["A", "C"]},
+    {"id": "A", "kind": "basic", "probability": 0.10},
+    {"id": "B", "kind": "basic", "probability": 0.20},
+    {"id": "C", "kind": "basic", "probability": 0.30}
+  ]
+}
