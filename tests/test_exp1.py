@@ -2,6 +2,7 @@ from itertools import product
 
 from fta.evaluate import evaluate
 from fta.io import load_tree
+from fta.mocus import minimal_cut_sets
 
 tree = load_tree("examples/exp1.json")
 
@@ -19,5 +20,10 @@ for a, b, c in product((False, True), repeat=3):
     expected = a and (b or c)
     print(state, "->", actual)
     assert actual == expected, f"Incorrect result for {state}"
+
+assert minimal_cut_sets(tree) == {
+    frozenset({"A", "B"}),
+    frozenset({"A", "C"}),
+}
 
 print("All eight assignments passed.")

@@ -1,0 +1,18 @@
+{
+  "root": "TOP",
+  "nodes": [
+    {"id": "TOP", "kind": "gate", "operator": "OR", "inputs": ["G1", "G2", "G3"]},
+    {"id": "G1", "kind": "gate", "operator": "AND", "inputs": ["LEFT", "RIGHT"]},
+    {"id": "LEFT", "kind": "gate", "operator": "OR", "inputs": ["A", "B"]},
+    {"id": "RIGHT", "kind": "gate", "operator": "OR", "inputs": ["A", "C"]},
+    {"id": "G2", "kind": "gate", "operator": "AND", "inputs": ["D", "SHARED"]},
+    {"id": "G3", "kind": "gate", "operator": "AND", "inputs": ["A", "SHARED"]},
+    {"id": "SHARED", "kind": "gate", "operator": "OR", "inputs": ["E", "F"]},
+    {"id": "A", "kind": "basic", "probability": 0.10},
+    {"id": "B", "kind": "basic", "probability": 0.20},
+    {"id": "C", "kind": "basic", "probability": 0.30},
+    {"id": "D", "kind": "basic", "probability": 0.05},
+    {"id": "E", "kind": "basic", "probability": 0.15},
+    {"id": "F", "kind": "basic", "probability": 0.25}
+  ]
+}
