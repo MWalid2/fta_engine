@@ -11,8 +11,7 @@ class BasicEvent:
 class Gate:
     id: str
     operator: str
-    inputs: tuple[str, ...] # this mean that the inputs are stored as a tuple of any length
-
+    inputs: tuple[str, ...] # a tuple of any length, all strings
 class FaultTree:
     def __init__(self, root:str, definitions):
         nodes = {}
@@ -25,7 +24,7 @@ class FaultTree:
                 p = node.probability
                 if type(p) not in (int, float) or not 0 <= p <= 1:
                     raise ValueError(f"Invalid probability for {node.id}")
-            elif node.operator not in ("AND, OR") or not node.inputs:
+            elif not isinstance(node.operator, str) or node.operator not in ("AND", "OR") or not node.inputs:
                 raise ValueError(f"Invalid gate: {node.id}")
             nodes[node.id] = node
 
@@ -34,7 +33,7 @@ class FaultTree:
 
         dependencies = {}
         for node_id, node in nodes.items():
-            inputs = node.inputs if isinstance(node, Gate) else ()
+            inputs = node.inputs if isinstance(node, Gate) else ()   # basic events depend on nothing
             for child in inputs:
                 if not isinstance(child, str) or child not in nodes:
                     raise ValueError(f"Unknown input {child!r} on {node_id}")
@@ -51,7 +50,7 @@ class FaultTree:
                 pending.extend(dependencies[node_id])
 
         self.root = root
-        self.nodes = MappingProxyType(nodes)
+        self.nodes = MappingProxyType(nodes)    # read-only view of the dict
         self.order = tuple(node_id for node_id in order if node_id in reachable)
         self.basic_ids = tuple(node_id for node_id in self.order if isinstance(self.nodes[node_id], BasicEvent))
         

@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from typing import Iterable, Iterator
 
-from .model import BasicEvent, FaultTree
+from .model import BasicEvent
 
 @dataclass(frozen=True)
 class ZBDDNode:

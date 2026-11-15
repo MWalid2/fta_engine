@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from typing import Iterable
 
-from .model import BasicEvent, FaultTree
+from .model import BasicEvent
 
 @dataclass(frozen=True)
 class BDDNode:
@@ -41,7 +40,7 @@ class BDD:
 
         return self._unique[node]
 
-    def apply(self, operator: str, left: int, right: str):
+    def apply(self, operator: str, left: int, right: int):
         if operator not in ("AND", "OR"):
             raise ValueError(f"Unsupported BDD operator: {operator!r}")
         if left > right:

@@ -1,8 +1,8 @@
 from .model import BasicEvent, FaultTree
 
-def evaluate(tree: FaultTree, state: dict[str, bool]) -> bool:
+def evaluate(tree: FaultTree, state: dict[str, bool]):
     values = {}
-    for node_id in tree.order:
+    for node_id in tree.order:          # children always come before parents
         node = tree.nodes[node_id]
         if isinstance(node, BasicEvent):
             value = state.get(node_id)
