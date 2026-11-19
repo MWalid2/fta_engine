@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from .model import BasicEvent
+from .utils.iterative import iterate
 
 @dataclass(frozen=True)
 class ZBDDNode:
@@ -63,111 +64,165 @@ class ZBDD:
         # The selected variable is absent from every set in this family.
         return root, self.ZERO
 
-    def union(self, left: int, right: int):
+    # union
+
+    def _union_trivial(self, left: int, right: int):
         if left == self.ZERO or left == right:
             return right
         if right == self.ZERO:
             return left
+        return None
 
-        key = (min(left, right), max(left, right))
-        if key in self._union_cache:
-            return self._union_cache[key]
-
+    def _union_dependencies(self, key):
+        left, right = key
+        if self._union_trivial(left, right) is not None:
+            return []
         variable = self._first_variable(left, right)
         left_low, left_high = self._split(left, variable)
         right_low, right_high = self._split(right, variable)
+        return [self._pair(left_low, right_low),
+                self._pair(left_high, right_high)]
 
-        low = self.union(left_low, right_low)
-        high = self.union(left_high, right_high)
-        result = self.make_node(variable, low, high)
-        self._union_cache[key] = result
-        return result
+    def _union_combine(self, key):
+        left, right = key
+        trivial = self._union_trivial(left, right)
+        if trivial is not None:
+            return trivial
+        variable = self._first_variable(left, right)
+        left_low, left_high = self._split(left, variable)
+        right_low, right_high = self._split(right, variable)
+        low = self._union_cache[self._pair(left_low, right_low)]
+        high = self._union_cache[self._pair(left_high, right_high)]
+        return self.make_node(variable, low, high)
 
-    def join(self, left: int, right: int):
+    def union(self, left: int, right: int):
+        return iterate(self._union_cache, self._pair(left, right),
+                       self._union_dependencies, self._union_combine)
+
+    # join
+
+    def _join_trivial(self, left: int, right: int):
         if left == self.ZERO or right == self.ZERO:
             return self.ZERO
         if left == self.ONE:
             return right
         if right == self.ONE:
             return left
+        return None
 
-        key = (min(left, right), max(left, right))
-        if key in self._join_cache:
-            return self._join_cache[key]
-
+    def _join_parts(self, left: int, right: int):
         variable = self._first_variable(left, right)
         left_low, left_high = self._split(left, variable)
         right_low, right_high = self._split(right, variable)
+        return variable, left_low, left_high, right_low, right_high
+
+    def _join_dependencies(self, key):
+        left, right = key
+        if self._join_trivial(left, right) is not None:
+            return []
+        _, ll, lh, rl, rh = self._join_parts(left, right)
+        return [self._pair(ll, rl), self._pair(lh, rl),
+                self._pair(ll, rh), self._pair(lh, rh)]
+
+    def _join_combine(self, key):
+        left, right = key
+        trivial = self._join_trivial(left, right)
+        if trivial is not None:
+            return trivial
+        variable, ll, lh, rl, rh = self._join_parts(left, right)
+        cache = self._join_cache
 
         # The merged set omits the variable only if both sets omit it.
-        low = self.join(left_low, right_low)
+        low = cache[self._pair(ll, rl)]
 
         # The merged set includes the variable if either set includes it.
+        # The union of the mixed products is a separate iterative call.
         high = self.union(
-            self.join(left_high, right_low),
-            self.join(left_low, right_high),
+            self.union(cache[self._pair(lh, rl)], cache[self._pair(ll, rh)]),
+            cache[self._pair(lh, rh)],
         )
-        high = self.union(high, self.join(left_high, right_high))
+        return self.make_node(variable, low, high)
 
-        result = self.make_node(variable, low, high)
-        self._join_cache[key] = result
-        return result
+    def join(self, left: int, right: int):
+        return iterate(self._join_cache, self._pair(left, right),
+                       self._join_dependencies, self._join_combine)
+    
+    # exclude supersets
 
-    def _exclude_supersets(self, candidates: int, subsets: int):
+    def _exclude_trivial(self, candidates: int, subsets: int):
         if candidates == self.ZERO or subsets == self.ONE:
             return self.ZERO
         if subsets == self.ZERO:
             return candidates
+        return None
 
-        key = (candidates, subsets)
-        if key in self._exclude_cache:
-            return self._exclude_cache[key]
-
+    def _exclude_parts(self, candidates: int, subsets: int):
         variable = self._first_variable(candidates, subsets)
         cand_low, cand_high = self._split(candidates, variable)
         sub_low, sub_high = self._split(subsets, variable)
+        # The high branch may contain a subset from either side.
+        merged = self.union(sub_low, sub_high)
+        return variable, cand_low, cand_high, sub_low, merged
 
+    def _exclude_dependencies(self, key):
+        candidates, subsets = key
+        if self._exclude_trivial(candidates, subsets) is not None:
+            return []
+        _, cand_low, cand_high, sub_low, merged = self._exclude_parts(
+            candidates, subsets)
+        return [(cand_low, sub_low), (cand_high, merged)]
+
+    def _exclude_combine(self, key):
+        candidates, subsets = key
+        trivial = self._exclude_trivial(candidates, subsets)
+        if trivial is not None:
+            return trivial
+        variable, cand_low, cand_high, sub_low, merged = self._exclude_parts(
+            candidates, subsets)
         # A candidate omitting the variable can only contain a subset
         # that also omits it.
-        low = self._exclude_supersets(cand_low, sub_low)
-
+        low = self._exclude_cache[(cand_low, sub_low)]
         # A candidate including the variable can contain either kind.
-        high = self._exclude_supersets(
-            cand_high, self.union(sub_low, sub_high)
-        )
+        high = self._exclude_cache[(cand_high, merged)]
+        return self.make_node(variable, low, high)
 
-        result = self.make_node(variable, low, high)
-        self._exclude_cache[key] = result
-        return result
+    def _exclude_supersets(self, candidates: int, subsets: int):
+        return iterate(self._exclude_cache, (candidates, subsets),
+                       self._exclude_dependencies, self._exclude_combine)
+    # minimal sets
 
-    def minimize(self, root: int):
-        if root in self._minimal_cache:
-            return self._minimal_cache[root]
-
+    def _minimize_dependencies(self, root):
         node = self.nodes[root]
-        low = self.minimize(node.low)
-        high = self.minimize(node.high)
+        return [node.low, node.high]
 
+    def _minimize_combine(self, root):
+        node = self.nodes[root]
+        low = self._minimal_cache[node.low]
+        high = self._minimal_cache[node.high]
         # A full high-branch set includes the node variable. If its
         # remainder contains a low-branch set, the full set is redundant.
         high = self._exclude_supersets(high, low)
+        return self.make_node(node.variable, low, high)
 
-        result = self.make_node(node.variable, low, high)
-        self._minimal_cache[root] = result
-        return result
+    def minimize(self, root: int):
+        return iterate(self._minimal_cache, root,
+                       self._minimize_dependencies, self._minimize_combine)
+
+    # enumeration
 
     def iter_sets(self, root: int):
-        if root == self.ZERO:
-            return
-        if root == self.ONE:
-            yield frozenset()
-            return
-
-        node = self.nodes[root]
-        yield from self.iter_sets(node.low)
-        for tail in self.iter_sets(node.high):
-            yield tail | {node.variable}
-
+        stack = [(root, frozenset())]
+        while stack:
+            node_id, tail = stack.pop()
+            if node_id == self.ZERO:
+                continue
+            if node_id == self.ONE:
+                yield tail
+                continue
+            node = self.nodes[node_id]
+            # Push high first so the low branch is popped (and yielded) first.
+            stack.append((node.high, tail | {node.variable}))
+            stack.append((node.low, tail))
 
 def build_zbdd(tree, variable_order):
     order = tree.basic_ids if variable_order is None else variable_order

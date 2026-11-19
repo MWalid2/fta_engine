@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from .model import BasicEvent
+from .utils.iterative import iterate
 
 @dataclass(frozen=True)
 class BDDNode:
@@ -40,59 +41,76 @@ class BDD:
 
         return self._unique[node]
 
-    def apply(self, operator: str, left: int, right: int):
-        if operator not in ("AND", "OR"):
-            raise ValueError(f"Unsupported BDD operator: {operator!r}")
-        if left > right:
-            left, right = right, left
+    # apply
+    
+    @staticmethod
+    def _apply_key(operator: str, left: int, right: int):
+        # AND and OR are commutative, so store each pair in one canonical order.
+        return (operator, min(left, right), max(left, right))
+
+    def _apply_terminal(self, operator: str, left: int, right: int):
+        """Return the result when it is trivial (left <= right), otherwise None."""
         if left == right:
             return left
         if left == self.FALSE:
             return self.FALSE if operator == "AND" else right
         if left == self.TRUE:
             return right if operator == "AND" else self.TRUE
-        
-        key = (operator, left, right)
-        if key in self._apply_cache:
-            return self._apply_cache[key]
+        return None
 
-        left_node = self.nodes[left]
-        right_node = self.nodes[right]
+    def _cofactors(self, left: int, right: int):
+        """Split both operands on their earliest variable."""
+        left_node, right_node = self.nodes[left], self.nodes[right]
         left_rank = self.rank[left_node.variable]
         right_rank = self.rank[right_node.variable]
-
         if left_rank == right_rank:
-            variable = left_node.variable
-            left_low, left_high = left_node.low, left_node.high
-            right_low, right_high = right_node.low, right_node.high
-        elif left_rank < right_rank:
-            variable = left_node.variable
-            left_low, left_high = left_node.low, left_node.high
-            right_low = right_high = right
-        else:
-            variable = right_node.variable
-            left_low = left_high = left
-            right_low, right_high = right_node.low, right_node.high
+            return (left_node.variable,
+                    (left_node.low, left_node.high),
+                    (right_node.low, right_node.high))
+        if left_rank < right_rank:
+            return left_node.variable, (left_node.low, left_node.high), (right, right)
+        return right_node.variable, (left, left), (right_node.low, right_node.high)
 
-        low = self.apply(operator, left_low, right_low)
-        high = self.apply(operator, left_high, right_high)
-        result = self.make_node(variable, low, high)
+    def _apply_dependencies(self, key):
+        operator, left, right = key
+        if self._apply_terminal(operator, left, right) is not None:
+            return []
+        _, (ll, lh), (rl, rh) = self._cofactors(left, right)
+        return [self._apply_key(operator, ll, rl), self._apply_key(operator, lh, rh)]
 
-        self._apply_cache[key] = result
-        return result
+    def _apply_combine(self, key):
+        operator, left, right = key
+        trivial = self._apply_terminal(operator, left, right)
+        if trivial is not None:
+            return trivial
+        variable, (ll, lh), (rl, rh) = self._cofactors(left, right)
+        low = self._apply_cache[self._apply_key(operator, ll, rl)]
+        high = self._apply_cache[self._apply_key(operator, lh, rh)]
+        return self.make_node(variable, low, high)
+
+    def apply(self, operator: str, left: int, right: int):
+        if operator not in ("AND", "OR"):
+            raise ValueError(f"Unsupported BDD operator: {operator!r}")
+        return iterate(self._apply_cache,
+                        self._apply_key(operator, left, right),
+                        self._apply_dependencies,
+                        self._apply_combine)
+
+    # proability
 
     def probability(self, root: int, probabilities: dict[str, float]):
         memo = {self.FALSE: 0.0, self.TRUE: 1.0}
 
-        def visit(node_id: int):
-            if node_id in memo:
-                return memo[node_id]
+        def dependencies(node_id):
+            node = self.nodes[node_id]
+            return [node.low, node.high]
+
+        def combine(node_id):
             node = self.nodes[node_id]
             p = probabilities[node.variable]
-            result = (1 - p) * visit(node.low) + p * visit(node.high)
-            memo[node_id] = result
-            return result
-        return visit(root)
+            return (1 - p) * memo[node.low] + p * memo[node.high]
+
+        return iterate(memo, root, dependencies, combine)
 
 def build_bdd(tree, variable_order):
     order = tree.basic_ids if variable_order is None else tuple(variable_order)
