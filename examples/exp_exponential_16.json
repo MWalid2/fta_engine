@@ -1,0 +1,332 @@
+{
+ "root": "TOP",
+ "nodes": [
+  {
+   "id": "a0",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b0",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G0",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a0",
+    "b0"
+   ]
+  },
+  {
+   "id": "a1",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b1",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G1",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a1",
+    "b1"
+   ]
+  },
+  {
+   "id": "a2",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b2",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G2",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a2",
+    "b2"
+   ]
+  },
+  {
+   "id": "a3",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b3",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G3",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a3",
+    "b3"
+   ]
+  },
+  {
+   "id": "a4",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b4",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G4",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a4",
+    "b4"
+   ]
+  },
+  {
+   "id": "a5",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b5",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G5",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a5",
+    "b5"
+   ]
+  },
+  {
+   "id": "a6",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b6",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G6",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a6",
+    "b6"
+   ]
+  },
+  {
+   "id": "a7",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b7",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G7",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a7",
+    "b7"
+   ]
+  },
+  {
+   "id": "a8",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b8",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G8",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a8",
+    "b8"
+   ]
+  },
+  {
+   "id": "a9",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b9",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G9",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a9",
+    "b9"
+   ]
+  },
+  {
+   "id": "a10",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b10",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G10",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a10",
+    "b10"
+   ]
+  },
+  {
+   "id": "a11",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b11",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G11",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a11",
+    "b11"
+   ]
+  },
+  {
+   "id": "a12",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b12",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G12",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a12",
+    "b12"
+   ]
+  },
+  {
+   "id": "a13",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b13",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G13",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a13",
+    "b13"
+   ]
+  },
+  {
+   "id": "a14",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b14",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G14",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a14",
+    "b14"
+   ]
+  },
+  {
+   "id": "a15",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "b15",
+   "kind": "basic",
+   "probability": 0.01
+  },
+  {
+   "id": "G15",
+   "kind": "gate",
+   "operator": "OR",
+   "inputs": [
+    "a15",
+    "b15"
+   ]
+  },
+  {
+   "id": "TOP",
+   "kind": "gate",
+   "operator": "AND",
+   "inputs": [
+    "G0",
+    "G1",
+    "G2",
+    "G3",
+    "G4",
+    "G5",
+    "G6",
+    "G7",
+    "G8",
+    "G9",
+    "G10",
+    "G11",
+    "G12",
+    "G13",
+    "G14",
+    "G15"
+   ]
+  }
+ ]
+}

@@ -1,10 +1,11 @@
 from itertools import product
+import pytest
 
 from fta.evaluate import evaluate
 from fta.io import load_tree
 from fta.mocus import minimal_cut_sets
 
-tree = load_tree("examples/exp1.json")
+tree = load_tree("examples/exp_basic.json")
 
 print("Root:", tree.root)
 print("Evaluation order:", tree.order)

@@ -64,6 +64,11 @@ class ZBDD:
         # The selected variable is absent from every set in this family.
         return root, self.ZERO
 
+    @staticmethod
+    def _pair(left: int, right: int):
+        # union and join are commutative, so store each pair canonically.
+        return (min(left, right), max(left, right))
+    
     # union
 
     def _union_trivial(self, left: int, right: int):

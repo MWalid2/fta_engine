@@ -1,7 +1,9 @@
+import pytest
+
 from fta.io import load_tree
 from fta.mocus import minimal_cut_sets
 
-tree = load_tree("examples/exp2.json")
+tree = load_tree("examples/exp_shared_gates.json")
 
 expected = {
     frozenset({"A"}),
